@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import java.util.Comparator;
 public class CityCSVProcessor {
 
 	public static final void main(String[] args) {
@@ -17,12 +19,47 @@ public class CityCSVProcessor {
 		
 		HashMap<String, List<CityRecord>> cityRecords = reader.readAndProcess(csvFile);
 		for (String city : cityRecords.keySet()) {
-			System.out.println(city);
-			for (CityRecord records : cityRecords.get(city)) {
-				System.out.println(records);
-			}
+
+			List<CityRecord> RecordsOfCity = cityRecords.get(city);
+			Integer average = CalculateAverage(RecordsOfCity);
+			String range = FindRangeOfYears(RecordsOfCity);
+
+			System.out.println(city + range + " : " + average );
+
+
 		}
 
+	}
+
+	public static Integer CalculateAverage(List<CityRecord> recordsOfCity) {
+		
+		int total = 0;
+		int n = 0;
+
+		for (CityRecord record : recordsOfCity) {
+			int population = record.population;
+			total += population;
+			n+=1;
+		}
+
+		return total/n;
+	} 
+
+	public static String FindRangeOfYears(List<CityRecord> recordsOfCity) {
+
+		List<Integer> years = new ArrayList<Integer>();
+		for (CityRecord record : recordsOfCity) {
+			Integer year = record.year;
+			years.add(year);
+		}
+
+		Integer size = years.size();
+		years.sort(Comparator.naturalOrder());
+
+		String minimum = Integer.toString(years.get(0));
+		String maximum = Integer.toString(years.get(size-1));
+
+		return " (" + minimum + " - " + maximum + "; " + size + " entries)";
 	}
 
 	public static class CityRecord {
@@ -72,8 +109,6 @@ public class CityCSVProcessor {
 				String city = convertToString(rawValues[2]);
 				int population = convertToInt(rawValues[3]);
 				
-				// Uncomment to print entries!
-				//System.out.println("id: " + id + ", year: " + year + ", city: " + city + ", population: " + population);
 				
 				CityRecord NewRecord = new CityRecord(id, year, city, population);
 				//System.out.println(NewRecord);

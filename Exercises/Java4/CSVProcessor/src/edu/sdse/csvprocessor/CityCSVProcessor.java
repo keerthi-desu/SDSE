@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class CityCSVProcessor {
 
@@ -14,10 +15,17 @@ public class CityCSVProcessor {
 		File dataDirectory = new File("data/");
 		File csvFile = new File(dataDirectory, "Cities.csv");
 		
-		reader.readAndProcess(csvFile);
+		HashMap<String, List<CityRecord>> cityRecords = reader.readAndProcess(csvFile);
+		for (String city : cityRecords.keySet()) {
+			System.out.println(city);
+			for (CityRecord records : cityRecords.get(city)) {
+				System.out.println(records);
+			}
+		}
+
 	}
 
-	public class CityRecord {
+	public static class CityRecord {
 		int id;
 		int year;
 		String city;
@@ -32,20 +40,29 @@ public class CityCSVProcessor {
 
 		// override!
 		public String toString() {
+			//return String.format("ID: %d, Year: %d, City: %s, Population: %d", id, year, city, population);
 			return "ID: " + id + ", Year: " + year + ", City: " + city + ", Population: " + population;
+		}
+
+		public static CityRecord main() {
+			CityRecord Record = new CityRecord(0, 0, null, 0);
+			return Record;
 		}
 
 	}
 	
-	public void readAndProcess(File file) {
+	public HashMap<String, List<CityRecord>> readAndProcess(File file) {
 		//Try with resource statement (as of Java 8)
+
+		List<CityRecord> allRecords = new ArrayList<CityRecord>();
+
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
 			//Discard header row
 			br.readLine();
 			
 			String line;
-			
+
 			while ((line = br.readLine()) != null) {
 				// Parse each line
 				String[] rawValues = line.split(",");
@@ -59,14 +76,31 @@ public class CityCSVProcessor {
 				//System.out.println("id: " + id + ", year: " + year + ", city: " + city + ", population: " + population);
 				
 				CityRecord NewRecord = new CityRecord(id, year, city, population);
-				System.out.println(NewRecord);
+				//System.out.println(NewRecord);
 
+				allRecords.add(NewRecord);
 
 			}
 		} catch (Exception e) {
 			System.err.println("An error occurred:");
 			e.printStackTrace();
 		}
+
+		HashMap<String, List<CityRecord>> recordsOfCity = new HashMap<String, List<CityRecord>>();
+
+		for (CityRecord cityRecord : allRecords) {
+
+			String key = cityRecord.city;
+			List<CityRecord> value = new ArrayList<CityRecord>();
+			
+			if (recordsOfCity.containsKey(key)) {
+				recordsOfCity.get(key).add(cityRecord);
+			} 
+			else {recordsOfCity.put(key, value);}
+
+		}
+
+		return recordsOfCity;
 	}
 	
 	private String cleanRawValue(String rawValue) {
